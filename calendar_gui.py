@@ -3,6 +3,9 @@ from tkinter import ttk
 import calendar
 import datetime
 import csv
+from parse_calendar import parse_default_calendar
+from cal_setup import get_calendar_service
+from edit_events import add_to_cal
 
 class CalendarApp(tk.Tk):
     def __init__(self):
@@ -45,7 +48,7 @@ class CalendarApp(tk.Tk):
 
         # Side panel widgets for creating custom events
         self.event_name = ttk.Entry(self.side_panel)
-        self.event_name_label = ttk.Label(self.side_panel, text="Event Name:")
+        self.event_name_label = ttk.Label(self.side_panel, text="Shift Name:")
         self.event_name_label.pack()
         self.event_name.pack()
 
@@ -67,6 +70,7 @@ class CalendarApp(tk.Tk):
 
         # Define three color options
         colors = ["1", "2", "3"]
+        self.selected_color = tk.StringVar()
 
         for color in colors:
             row_frame = ttk.Frame(self.color_frame)
@@ -104,9 +108,9 @@ class CalendarApp(tk.Tk):
         self.save_btn.pack()
 
         # Upload button
-        self.save_btn = ttk.Button(self.side_panel, text="Save", 
-                                   command=self.save_events_to_csv)
-        self.save_btn.pack()
+        self.upload_btn = ttk.Button(self.side_panel, text="Upload", 
+                                   command=self.upload_events_to_gcal)
+        self.upload_btn.pack()
 
     def update_calendar(self):
         self.date.config(text=self.current_date.strftime("%B %Y"))
@@ -234,11 +238,24 @@ class CalendarApp(tk.Tk):
         # Toggle the style back to "TButton" when the button is left
         self.style.configure(btn["style"], background="white")
 
-    def save_events_to_csv(self):
+    def save_events_to_csv(self):  # TODO: change this to use pandas dataframes and save them to csv.
         with open('new_cal_data.csv', 'w') as log:
-            log.write("Date,Name,Start Time,End Time,Color\n")
+            log.write("Date,Shift,Start Time,End Time,Color\n")
             for event in self.events:
                 log.write(event["date"]+','+event["name"]+','+event["start_time"]+','+event["end_time"]+','+event["color"]+'\n')
+    
+    def upload_events_to_gcal(self):
+        """
+        Upload the events saved in the file new_cal_data.csv to Google Calendar,
+        and erase the contents of new_cal_data.csv if successful.
+        """
+        calendar_data = parse_default_calendar()
+        service = get_calendar_service()
+        unsucessful_index = add_to_cal(service, calendar_data)
+
+        unsucessful_event_calendar_data = calendar_data.iloc[unsucessful_index]
+        unsucessful_event_calendar_data.to_csv("new_cal_data.csv")
+        
 
 def main():
     app = CalendarApp()
