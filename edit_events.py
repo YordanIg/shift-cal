@@ -1,23 +1,22 @@
 """
-Functions that add and delete events from Flo's shift calendar.
+Functions that add and delete events from the shift calendar.
 """
 from googleapiclient.errors import HttpError
-from parse_calendar import parse_calendar_data, parse_default_calendar
 from datetime import datetime, timedelta
 
 
-FLO_ID = '35ff39e798f9acc1fb3904b1372feca82c40d3656cebea11d7335551f8f70e0b@group.calendar.google.com'
+CAL_ID = '35ff39e798f9acc1fb3904b1372feca82c40d3656cebea11d7335551f8f70e0b@group.calendar.google.com'
 
 
 def set_all_day_event(service, date, summary, description):
     '''
-    Set a single all-day event in Flo's shift calendar, and save the event id in
+    Set a single all-day event in the shift calendar, and save the event id in
     a log file.
 
     Dates must be passed in the format 'YYYY-MM-DD'.
     '''
     event_result = service.events().insert(
-        calendarId=FLO_ID,
+        calendarId=CAL_ID,
         body={
             "summary": summary,
             "description": description,
@@ -41,8 +40,8 @@ def set_all_day_event(service, date, summary, description):
 def set_timed_event(service, date, timeStart, timeEnd, summary, description, 
                     color=None):
     '''
-    Set a single all-day event in Flo's shift calendar, and save the event id in
-    a log file.
+    Set a single all-day event in the shift calendar, and save the event id in a
+    log file.
 
     Dates must be passed in the format 'YYYY-MM-DD', and times must be passed in
     24-hour format (HH:MM).
@@ -66,7 +65,7 @@ def set_timed_event(service, date, timeStart, timeEnd, summary, description,
         body["colorId"] = color
 
     event_result = service.events().insert(
-        calendarId=FLO_ID,
+        calendarId=CAL_ID,
         body=body
     ).execute()
 
@@ -74,22 +73,15 @@ def set_timed_event(service, date, timeStart, timeEnd, summary, description,
     with open('event_log.txt', 'a') as log:
         log.write(event_result['id']+'\n')
 
-    summary_text = "created event\n"
-    summary_text += "id: {}\n".format(event_result['id'])
-    summary_text += "summary: {}\n".format(event_result['summary'])
-    summary_text += "starts at: {}\n".format(event_result['start']['dateTime'])
-    summary_text += "ends at: {}".format(event_result['end']['dateTime'])
-    return summary_text
-
 
 def delete_event(service, id):
     """
-    Delete an event in Flo's calendar given its event id. Return 0 if succesful,
-    else return 1.
+    Delete an event in the shift calendar given its event id. Return 0 if 
+    succesful, else return 1.
     """
     try:
         service.events().delete(
-            calendarId=FLO_ID,
+            calendarId=CAL_ID,
             eventId=id,
         ).execute()
         print("Event deleted")
@@ -101,8 +93,8 @@ def delete_event(service, id):
 
 def delete_all_events(service):
     """
-    Delete all events in Flo's calendar stored in the event_log file, and clear
-    the file.
+    Delete all events in the shift calendar stored in the event_log file, and 
+    clear the file.
     Raise FileNotFoundError if event_log.txt has not been created by one of the
     set_event functions.
     """
@@ -146,17 +138,25 @@ def add_to_cal(service, df):
     "Shift", which will be the event summary, "Start Time" and "End Time" in the
     format "HH:MM" (24hr clock).
     If "Color" is also passed, will make the event this color.
+    Return the indexes in the dataframe of any events that were not added 
+    sucessfully.
     """
+    unsucessful_index = []
     for i in range(len(df)):
-        set_timed_event(
-            service, 
-            date=df['Date'][i],
-            timeStart=df['Start Time'][i],
-            timeEnd=df['End Time'][i],
-            summary=df['Shift'][i],
-            description='',
-            color=df['Color'][i]
-        )
+        try:
+            set_timed_event(
+                service, 
+                date=df['Date'][i],
+                timeStart=df['Start Time'][i],
+                timeEnd=df['End Time'][i],
+                summary=df['Shift'][i],
+                description='',
+                color=df['Color'][i]
+            )
+        except:
+            unsucessful_index.append(i)
+    return unsucessful_index
+
 
 
 if __name__ == '__main__':
@@ -164,6 +164,7 @@ if __name__ == '__main__':
     An example of how to use the code here.
     '''
     from cal_setup import get_calendar_service
+    from parse_calendar import parse_default_calendar
 
     calendar_data = parse_default_calendar()
     service = get_calendar_service()
