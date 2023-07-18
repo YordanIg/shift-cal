@@ -189,8 +189,8 @@ class CalendarApp(tk.Tk):
 
             # Create a new event using the clicked date instead of self.current_date
             new_event = {
-                "name": selected_event_type["name"],
                 "date": clicked_date.strftime("%Y-%m-%d"),
+                "name": selected_event_type["name"],
                 "start_time": selected_event_type["start_time"],
                 "end_time": selected_event_type["end_time"],
                 "color": selected_event_type["color"]
@@ -240,7 +240,7 @@ class CalendarApp(tk.Tk):
 
     def save_events_to_csv(self):  # TODO: change this to use pandas dataframes and save them to csv.
         with open('new_cal_data.csv', 'w') as log:
-            log.write("Date,Shift,Start Time,End Time,Color\n")
+            log.write("date,name,start_time,end_time,color\n")
             for event in self.events:
                 log.write(event["date"]+','+event["name"]+','+event["start_time"]+','+event["end_time"]+','+event["color"]+'\n')
     

@@ -16,28 +16,28 @@ def parse_calendar_data():
     calendar_data.index = range(len(calendar_data))  # Have to re-index after dropping values.
 
     # Drop rows that don't contain shifts.
-    drop_indexes = [i for i in range(len(calendar_data)) if calendar_data.iloc[i]['Shift'] == 'nan']
+    drop_indexes = [i for i in range(len(calendar_data)) if calendar_data.iloc[i]['name'] == 'nan']
     calendar_data = calendar_data.drop(drop_indexes)
     calendar_data.index = range(len(calendar_data))  # Have to re-index after dropping values.
     
     # Convert date format from DD/MM/YYYY to YYYY-MM-DD.
-    datetimes = [datetime.strptime(calendar_data['Date'][i], '%d/%m/%Y') for i in range(len(calendar_data))]
+    datetimes = [datetime.strptime(calendar_data['date'][i], '%d/%m/%Y') for i in range(len(calendar_data))]
     datetimes = [dt.strftime('%Y-%m-%d') for dt in datetimes]
-    calendar_data['Date'] = datetimes
+    calendar_data['date'] = datetimes
 
     # Set the time properties & event colors depending on whether it's a short
     # or a long shift.
-    calendar_data['Start Time'] = '08:00'
-    calendar_data['End Time'] = '0'
-    calendar_data['Color'] = '0'
+    calendar_data['start_time'] = '08:00'
+    calendar_data['end_time'] = '0'
+    calendar_data['color'] = '0'
 
     for i in range(len(calendar_data)):
-        if calendar_data.iloc[i]['Shift'][-1] == 'L':
-            calendar_data.loc[i, 'End Time'] = '20:30'
-            calendar_data.loc[i, 'Color'] = '1'
-        elif calendar_data.iloc[i]['Shift'][-1] == 'S':
-            calendar_data.loc[i, 'End Time'] = '16:30'
-            calendar_data.loc[i, 'Color'] = '2'
+        if calendar_data.iloc[i]['name'][-1] == 'L':
+            calendar_data.loc[i, 'end_time'] = '20:30'
+            calendar_data.loc[i, 'color'] = '1'
+        elif calendar_data.iloc[i]['name'][-1] == 'S':
+            calendar_data.loc[i, 'end_time'] = '16:30'
+            calendar_data.loc[i, 'color'] = '2'
         else:
             raise ValueError
 

@@ -146,12 +146,12 @@ def add_to_cal(service, df):
         try:
             set_timed_event(
                 service, 
-                date=df['Date'][i],
-                timeStart=df['Start Time'][i],
-                timeEnd=df['End Time'][i],
-                summary=df['Shift'][i],
+                date=df['date'][i],
+                timeStart=df['start_time'][i],
+                timeEnd=df['end_time'][i],
+                summary=df['name'][i],
                 description='',
-                color=df['Color'][i]
+                color=df['color'][i]
             )
         except:
             unsucessful_index.append(i)
