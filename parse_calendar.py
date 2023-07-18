@@ -42,3 +42,10 @@ def parse_calendar_data():
             raise ValueError
 
     return calendar_data
+
+def parse_default_calendar():
+    """
+    Return calendar data as a pandas dataframe.
+    """
+    calendar_data = pd.read_csv('new_cal_data.csv', dtype=str)
+    return calendar_data
