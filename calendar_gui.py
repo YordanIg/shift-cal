@@ -3,6 +3,7 @@ from tkinter import ttk
 import calendar
 import datetime
 import csv
+import pandas as pd
 from parse_calendar import parse_default_calendar
 from cal_setup import get_calendar_service
 from edit_events import add_to_cal
@@ -238,11 +239,8 @@ class CalendarApp(tk.Tk):
         # Toggle the style back to "TButton" when the button is left
         self.style.configure(btn["style"], background="white")
 
-    def save_events_to_csv(self):  # TODO: change this to use pandas dataframes and save them to csv.
-        with open('new_cal_data.csv', 'w') as log:
-            log.write("date,name,start_time,end_time,color\n")
-            for event in self.events:
-                log.write(event["date"]+','+event["name"]+','+event["start_time"]+','+event["end_time"]+','+event["color"]+'\n')
+    def save_events_to_csv(self):
+        pd.DataFrame(self.events).to_csv("new_cal_data.csv")
     
     def upload_events_to_gcal(self):
         """
