@@ -99,7 +99,6 @@ def delete_event(service, id):
         return 1
     
 
-
 def delete_all_events(service):
     """
     Delete all events in Flo's calendar stored in the event_log file, and clear
@@ -124,18 +123,11 @@ def delete_all_events(service):
             log.write(id+'\n')
 
 
-'''
-open the log file and store all ids in a list.
-go through the list, deleting ids as you pass them to delete_event, and keep them
-in the list if you don't.
-re-write the file.
-'''
-
 def add_to_cal_all_day(service, df):
     """
-    Write a series of all-day events to the calendar. They must be passed as a pandas
-    dataframe with colums "Date" in the format '%Y-%m-%d' (i.e. YYYY-MM-DD) and 
-    "Shift", which will be the event summary.
+    Write a series of all-day events to the calendar. They must be passed as a 
+    pandas dataframe with colums "Date" in the format '%Y-%m-%d' 
+    (i.e. YYYY-MM-DD) and "Shift", which will be the event summary.
     """
     for i in range(len(df)):
         set_all_day_event(
