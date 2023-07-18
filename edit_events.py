@@ -1,7 +1,8 @@
 """
 Functions that add and delete events from Flo's shift calendar.
 """
-from parse_calendar import parse_calendar_data
+from googleapiclient.errors import HttpError
+from parse_calendar import parse_calendar_data, parse_default_calendar
 from datetime import datetime, timedelta
 
 
@@ -83,13 +84,20 @@ def set_timed_event(service, date, timeStart, timeEnd, summary, description,
 
 def delete_event(service, id):
     """
-    Delete an event in Flo's calendar given its event id.
+    Delete an event in Flo's calendar given its event id. Return 0 if succesful,
+    else return 1.
     """
-    service.events().delete(
-        calendarId=FLO_ID,
-        eventId=id,
-    ).execute()
-    print("Event deleted")
+    try:
+        service.events().delete(
+            calendarId=FLO_ID,
+            eventId=id,
+        ).execute()
+        print("Event deleted")
+        return 0
+    except HttpError as error_message:
+        print("HttpError - Event not deleted: " + str(error_message))
+        return 1
+    
 
 
 def delete_all_events(service):
@@ -101,10 +109,27 @@ def delete_all_events(service):
         all_ids = log.readlines()
         all_ids = [id.rstrip('\n') for id in all_ids]  # Remove newline characters.
         all_ids = [id.rstrip('\r') for id in all_ids]  # Remove return characters.
+    
+    undeleted_ids = []  # Store ids that fail to delete.
     for id in all_ids:
-        delete_event(service, id)
-    open('event_log.txt', 'w').close()  # Delete log contents.
+        if delete_event(service, id):
+            undeleted_ids.append(id)
+        else:
+            continue
 
+    # Store any non-deleted ids in a clean log.
+    open('event_log.txt', 'w').close()
+    with open('event_log.txt', 'a') as log:
+        for id in undeleted_ids:
+            log.write(id+'\n')
+
+
+'''
+open the log file and store all ids in a list.
+go through the list, deleting ids as you pass them to delete_event, and keep them
+in the list if you don't.
+re-write the file.
+'''
 
 def add_to_cal_all_day(service, df):
     """
@@ -146,6 +171,7 @@ if __name__ == '__main__':
     '''
     from cal_setup import get_calendar_service
 
-    calendar_data = parse_calendar_data()
+    calendar_data = parse_default_calendar()
     service = get_calendar_service()
     add_to_cal(service, calendar_data)
+
