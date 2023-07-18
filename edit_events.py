@@ -103,6 +103,8 @@ def delete_all_events(service):
     """
     Delete all events in Flo's calendar stored in the event_log file, and clear
     the file.
+    Raise FileNotFoundError if event_log.txt has not been created by one of the
+    set_event functions.
     """
     with open('event_log.txt', 'r') as log:
         all_ids = log.readlines()
