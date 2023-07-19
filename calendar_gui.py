@@ -70,7 +70,7 @@ class CalendarApp(tk.Tk):
         self.color_label.pack()
 
         # Define three color options
-        colors = ["1", "2", "3"]
+        colors = ["1", "2", "3", "4", "5", "6"]
         self.selected_color = tk.StringVar()
 
         for color in colors:
