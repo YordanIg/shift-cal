@@ -1,11 +1,30 @@
 """
 Functions that add and delete events from the shift calendar.
 """
+import re
 from googleapiclient.errors import HttpError
 from datetime import datetime, timedelta
 
 
 CAL_ID = '35ff39e798f9acc1fb3904b1372feca82c40d3656cebea11d7335551f8f70e0b@group.calendar.google.com'
+
+
+def extract_hours_minutes(time_str):
+    # Define the regular expression pattern
+    pattern = r'(\d+):(\d+)'
+    
+    # Match the pattern in the time string
+    match = re.match(pattern, time_str)
+    
+    if match:
+        # Extract the hours and minutes from the matched groups
+        hours = int(match.group(1))
+        minutes = int(match.group(2))
+        
+        return hours, minutes
+    
+    # Return None if the time string doesn't match the expected pattern
+    return None
 
 
 def set_all_day_event(service, date, summary, description, color=None):
@@ -44,12 +63,15 @@ def set_timed_event(service, date, timeStart, timeEnd, summary, description,
     Dates must be passed in the format 'YYYY-MM-DD', and times must be passed in
     24-hour format (HH:MM).
     '''
+    start_hours, start_mins = extract_hours_minutes(timeStart)
+    end_hours, end_mins = extract_hours_minutes(timeEnd)
+
     datetimeStart = datetime.strptime(date, '%Y-%m-%d') \
-                    + timedelta(hours=int(timeStart[:2]), 
-                                minutes=int(timeStart[3:]))
+                    + timedelta(hours=start_hours, 
+                                minutes=start_mins)
     datetimeEnd = datetime.strptime(date, '%Y-%m-%d') \
-                    + timedelta(hours=int(timeEnd[:2]), 
-                                minutes=int(timeEnd[3:]))
+                    + timedelta(hours=end_hours, 
+                                minutes=end_mins)
     datetimeStart = datetimeStart.isoformat()
     datetimeEnd   = datetimeEnd.isoformat()
 
@@ -144,7 +166,6 @@ def add_to_cal(service, df):
     for i in range(len(df)):
         try:
             if df['start_time'][i] == 'nan':
-                print('A')
                 set_all_day_event(
                     service, 
                     date=df['date'][i],
@@ -153,7 +174,6 @@ def add_to_cal(service, df):
                     color=df['color'][i]
                 )
             else:
-                print('B')
                 set_timed_event(
                     service, 
                     date=df['date'][i],
