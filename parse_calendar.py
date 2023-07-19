@@ -47,5 +47,6 @@ def parse_default_calendar():
     """
     Return calendar data as a pandas dataframe.
     """
-    calendar_data = pd.read_csv('new_cal_data.csv', dtype=str)
+    calendar_data = pd.read_csv('new_cal_data.csv')
+    calendar_data = pd.DataFrame(calendar_data, dtype=str)
     return calendar_data

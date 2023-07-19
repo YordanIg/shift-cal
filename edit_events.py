@@ -8,33 +8,31 @@ from datetime import datetime, timedelta
 CAL_ID = '35ff39e798f9acc1fb3904b1372feca82c40d3656cebea11d7335551f8f70e0b@group.calendar.google.com'
 
 
-def set_all_day_event(service, date, summary, description):
+def set_all_day_event(service, date, summary, description, color=None):
     '''
     Set a single all-day event in the shift calendar, and save the event id in
     a log file.
 
     Dates must be passed in the format 'YYYY-MM-DD'.
     '''
+
+    body = {
+        "summary": summary,
+        "description": description,
+        "start": {"date": date, "timeZone": 'Europe/London'},
+        "end": {"date": date, "timeZone": 'Europe/London'},
+    }
+    if color is not None:
+        body["colorId"] = color
+
     event_result = service.events().insert(
         calendarId=CAL_ID,
-        body={
-            "summary": summary,
-            "description": description,
-            "start": {"date": date, "timeZone": 'Europe/London'},
-            "end": {"date": date, "timeZone": 'Europe/London'},
-        }
+        body=body
     ).execute()
 
     # Save all event id's in a log for easy deletion.
     with open('event_log.txt', 'a') as log:
         log.write(event_result['id']+'\n')
-
-    summary_text = "created event\n"
-    summary_text += "id: {}\n".format(event_result['id'])
-    summary_text += "summary: {}\n".format(event_result['summary'])
-    summary_text += "starts at: {}\n".format(event_result['start']['date'])
-    summary_text += "ends at: {}".format(event_result['end']['date'])
-    return summary_text
 
 
 def set_timed_event(service, date, timeStart, timeEnd, summary, description, 
@@ -134,9 +132,10 @@ def add_to_cal_all_day(service, df):
 def add_to_cal(service, df):
     """
     Write a series of events to the calendar. They must be passed as a pandas
-    dataframe with colums "Date" in the format '%Y-%m-%d' (i.e. YYYY-MM-DD), 
-    "Shift", which will be the event summary, "Start Time" and "End Time" in the
-    format "HH:MM" (24hr clock).
+    dataframe, with dtype=str, with colums "date" in the format '%Y-%m-%d' 
+    (i.e. YYYY-MM-DD), "name", which will be the event summary, "start_time" and 
+    "end_time" in the format "HH:MM" (24hr clock). If start_time is nan, the 
+    event will be added as an all-day event.
     If "Color" is also passed, will make the event this color.
     Return the indexes in the dataframe of any events that were not added 
     sucessfully.
@@ -144,16 +143,28 @@ def add_to_cal(service, df):
     unsucessful_index = []
     for i in range(len(df)):
         try:
-            set_timed_event(
-                service, 
-                date=df['date'][i],
-                timeStart=df['start_time'][i],
-                timeEnd=df['end_time'][i],
-                summary=df['name'][i],
-                description='',
-                color=df['color'][i]
-            )
-        except:
+            if df['start_time'][i] == 'nan':
+                print('A')
+                set_all_day_event(
+                    service, 
+                    date=df['date'][i],
+                    summary=df['name'][i],
+                    description='',
+                    color=df['color'][i]
+                )
+            else:
+                print('B')
+                set_timed_event(
+                    service, 
+                    date=df['date'][i],
+                    timeStart=df['start_time'][i],
+                    timeEnd=df['end_time'][i],
+                    summary=df['name'][i],
+                    description='',
+                    color=df['color'][i]
+                )
+        except Exception as e:
+            print('Error: '+str(e))
             unsucessful_index.append(i)
     return unsucessful_index
 
