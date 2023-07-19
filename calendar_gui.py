@@ -252,7 +252,7 @@ class CalendarApp(tk.Tk):
         unsucessful_index = add_to_cal(service, calendar_data)
 
         unsucessful_event_calendar_data = calendar_data.iloc[unsucessful_index]
-        unsucessful_event_calendar_data.to_csv("new_cal_data.csv")
+        unsucessful_event_calendar_data.to_csv("new_cal_data.csv", index=False)
         
 
 def main():
