@@ -154,7 +154,8 @@ class CalendarApp(tk.Tk):
         self.selected_color.set(None)
 
         # Add the created event type to the list for selection
-        self.added_event_types_list.insert(tk.END, name)
+        label = name+' | '+start_time+' - '+end_time+' | color: '+color
+        self.added_event_types_list.insert(tk.END, label)
 
     def add_event(self, day):
         if self.selected_event_type:
@@ -180,7 +181,12 @@ class CalendarApp(tk.Tk):
 
     def get_event_type_by_name(self, event_name):
         for event_type in self.event_types:
-            if event_type["name"] == event_name:
+            name       = event_type['name']
+            start_time = event_type['start_time']
+            end_time   = event_type['end_time']
+            color      = event_type['color']
+            match_label = name+' | '+start_time+' - '+end_time+' | color: '+color
+            if event_name == match_label:
                 return event_type
         return None
 
@@ -204,7 +210,7 @@ class CalendarApp(tk.Tk):
         for event in self.events:
             event_name = event["name"]
             event_date = event["date"]
-            self.added_events_list.insert(tk.END, f"{event_name} - Date: {event_date}")
+            self.added_events_list.insert(tk.END, f"{event_name} | {event_date}")
 
     def previous_month(self):
         if self.current_date.month == 1:
