@@ -114,24 +114,41 @@ class CalendarApp(tk.Tk):
         self.upload_btn.pack()
 
     def update_calendar(self):
-        self.date.config(text=self.current_date.strftime("%B %Y"))
-
-        year = self.current_date.year
-        month = self.current_date.month
-        cal = calendar.monthcalendar(year, month)
-
+        # Clear the calendar grid
         for widget in self.calendar_grid.winfo_children():
             widget.destroy()
 
+        # Create a new frame for day labels
+        day_labels_frame = ttk.Frame(self.calendar_grid)
+        day_labels_frame.grid(row=0, column=0, columnspan=7, pady=5)
+
+        # Define the names of the days of the week
+        days_of_week = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+        # Create calendar buttons along with day labels in the same loop
+        cal = calendar.monthcalendar(self.current_date.year, self.current_date.month)
         for week_num, week in enumerate(cal):
             for day_num, day in enumerate(week):
                 if day != 0:
+                    # Align day labels with the corresponding date column
+                    day_label = ttk.Label(
+                        day_labels_frame,
+                        text=days_of_week[day_num],
+                        font=("Helvetica", 16),
+                        background="light gray"
+                    )
+                    day_label.grid(row=0, column=day_num, padx=40, pady=5)
+
                     day_btn = ttk.Button(
                         self.calendar_grid,
                         text=str(day),
                         command=lambda day=day: self.add_event(day),
                     )
-                    day_btn.grid(row=week_num, column=day_num, ipady=10, ipadx=10)
+                    day_btn.grid(row=week_num + 1, column=day_num, padx=5, pady=5)
+
+        # Vertically align rows to push the buttons down below the day labels
+        day_labels_frame.grid_rowconfigure(0, weight=1)
+        self.calendar_grid.grid_rowconfigure(week_num + 1, weight=1)
 
     def create_event_type(self):
         name = self.event_name.get()
