@@ -65,13 +65,22 @@ def set_timed_event(service, date, timeStart, timeEnd, summary, description,
     '''
     start_hours, start_mins = extract_hours_minutes(timeStart)
     end_hours, end_mins = extract_hours_minutes(timeEnd)
+    
+    # If the event start time is later in the day than the end time, assume that
+    # this is an overnight event.
+    start_day_datetime = datetime.strptime(date, '%Y-%m-%d')
 
-    datetimeStart = datetime.strptime(date, '%Y-%m-%d') \
-                    + timedelta(hours=start_hours, 
-                                minutes=start_mins)
-    datetimeEnd = datetime.strptime(date, '%Y-%m-%d') \
-                    + timedelta(hours=end_hours, 
-                                minutes=end_mins)
+    start_minute = 60*start_hours + start_mins
+    end_minute   = 60*end_hours + end_mins
+    if start_minute > end_minute:
+        end_day_datetime = start_day_datetime \
+                         + timedelta(days=1)
+        
+
+    datetimeStart = start_day_datetime + timedelta(hours=start_hours, 
+                                                   minutes=start_mins)
+    datetimeEnd   = end_day_datetime   + timedelta(hours=end_hours, 
+                                                   minutes=end_mins)
     datetimeStart = datetimeStart.isoformat()
     datetimeEnd   = datetimeEnd.isoformat()
 
