@@ -96,6 +96,8 @@ def set_timed_event(service, date, timeStart, timeEnd, summary, description,
     if start_minute > end_minute:
         end_day_datetime = start_day_datetime \
                          + timedelta(days=1)
+    else:
+        end_day_datetime = start_day_datetime
         
 
     datetimeStart = start_day_datetime + timedelta(hours=start_hours, 
