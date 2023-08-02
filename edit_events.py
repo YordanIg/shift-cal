@@ -10,21 +10,42 @@ CAL_ID = '35ff39e798f9acc1fb3904b1372feca82c40d3656cebea11d7335551f8f70e0b@group
 
 
 def extract_hours_minutes(time_str):
-    # Define the regular expression pattern
-    pattern = r'(\d+):(\d+)'
+    """
+    Parse the time string and return the hours and minutes as a tuple of
+    integers. Handles times of format H:MM, HH:MM, H, HH, HMM, HHMM. 
+    """
+    # Define the invalid time error message in advance.
+    errormsg = f"time string '{time_str}' does not match expected " \
+             +  "formats: H:MM, HH:MM, HMM, HHMM, H, HH."
     
-    # Match the pattern in the time string
-    match = re.match(pattern, time_str)
+    # Define the regular expression pattern for the formats H:MM and HH:MM.
+    colon_pattern = r'(\d+):(\d+)'
+    colon_match = re.match(colon_pattern, time_str)
     
-    if match:
-        # Extract the hours and minutes from the matched groups
-        hours = int(match.group(1))
-        minutes = int(match.group(2))
-        
-        return hours, minutes
+    if colon_match:
+        hour_str, minute_str = colon_match.group(1), colon_match.group(2)
+        if len(hour_str) not in (1, 2) or len(minute_str) != 2:
+            raise ValueError(errormsg)
+        hours, minutes = int(hour_str), int(minute_str)
+    else:
+        if len(time_str) == 1:
+            hours   = int(time_str)
+            minutes = 0
+        elif len(time_str) == 2:
+            hours   = int(time_str)
+            minutes = 0
+        elif len(time_str) == 3:
+            hours   = int(time_str[0])
+            minutes = int(time_str[1:])
+        elif len(time_str) == 4:
+            hours   = int(time_str[:2])
+            minutes = int(time_str[2:])
+        else:
+            raise ValueError(errormsg)
     
-    # Return None if the time string doesn't match the expected pattern
-    return None
+    if hours > 24 or minutes > 60:
+        raise ValueError(f"{hours}:{minutes} is not a time.")
+    return hours, minutes
 
 
 def set_all_day_event(service, date, summary, description, color=None):
